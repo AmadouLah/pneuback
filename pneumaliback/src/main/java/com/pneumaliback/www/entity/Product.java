@@ -1,0 +1,49 @@
+package com.pneumaliback.www.entity;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Entity
+@Table(name = "products")
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class Product extends EntiteAuditable {
+    @Column(nullable = false, length = 150)
+    private String name;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
+
+    @Column(nullable = false)
+    private int stock;
+
+    @Column(length = 50)
+    private String brand;
+
+    @Column(length = 50)
+    private String size;
+
+    @Column(length = 50)
+    private String season; // Été, Hiver, 4 saisons
+
+    @ManyToOne(optional = false)
+    private Category category;
+
+    @OneToMany(mappedBy = "product")
+    private List<OrderItem> orderItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product")
+    private List<Review> reviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product")
+    private List<Favori> favoris = new ArrayList<>();
+}

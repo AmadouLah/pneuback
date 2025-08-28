@@ -1,0 +1,31 @@
+package com.pneumaliback.www.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Entity
+@Table(name = "addresses")
+@Data
+@EqualsAndHashCode(callSuper = true)
+
+public class Address extends EntiteAuditable {
+
+    @Column(nullable = false, length = 150)
+    private String street;
+
+    @Column(nullable = false, length = 100)
+    private String city;
+
+    @Column(nullable = false, length = 100)
+    private String region;
+
+    @Column(length = 50)
+    private String postalCode;
+
+    @ManyToOne(optional = false)
+    private User user;
+}
