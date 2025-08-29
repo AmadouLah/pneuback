@@ -5,8 +5,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.pneumaliback.www.enums.PromotionType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -19,6 +23,10 @@ import lombok.EqualsAndHashCode;
 public class Promotion extends EntiteAuditable {
     @Column(nullable = false, length = 100)
     private String code;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PromotionType type;
 
     @Column(nullable = false, precision = 5, scale = 2)
     private BigDecimal discountPercentage;

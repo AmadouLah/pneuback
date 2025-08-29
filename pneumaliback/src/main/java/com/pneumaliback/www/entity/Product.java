@@ -4,8 +4,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.pneumaliback.www.enums.TireSeason;
+import com.pneumaliback.www.enums.VehicleType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -32,8 +37,13 @@ public class Product extends EntiteAuditable {
     @Column(length = 50)
     private String size;
 
-    @Column(length = 50)
-    private String season; // Été, Hiver, 4 saisons
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private TireSeason season;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private VehicleType vehicleType;
 
     @ManyToOne(optional = false)
     private Category category;

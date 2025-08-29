@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.pneumaliback.www.enums.Country;
 import com.pneumaliback.www.enums.Role;
 
 @Entity
@@ -40,6 +41,10 @@ public class User extends EntiteAuditable implements UserDetails {
 
     @Column(length = 20)
     private String phoneNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private Country country = Country.MALI;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
