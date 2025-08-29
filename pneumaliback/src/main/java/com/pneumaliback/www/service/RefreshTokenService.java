@@ -3,6 +3,8 @@ package com.pneumaliback.www.service;
 import com.pneumaliback.www.entity.RefreshToken;
 import com.pneumaliback.www.entity.User;
 import com.pneumaliback.www.repository.RefreshTokenRepository;
+
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,6 +57,7 @@ public class RefreshTokenService {
     }
 
     @Scheduled(fixedRate = 86400000) // Exécution quotidienne
+    @Transactional
     public void cleanupExpiredTokens() {
         log.info("Nettoyage des refresh tokens expirés...");
         refreshTokenRepository.deleteByExpiryDateBefore(Instant.now());

@@ -12,8 +12,12 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     
     Optional<User> findByEmail(String email);
+
+    Optional<User> findByUsername(String username);
     
     boolean existsByEmail(String email);
+
+    boolean existsByUsername(String username);
     
     @Query("SELECT u FROM User u WHERE u.email = :email AND u.accountNonLocked = true")
     Optional<User> findByEmailAndAccountNonLocked(@Param("email") String email);

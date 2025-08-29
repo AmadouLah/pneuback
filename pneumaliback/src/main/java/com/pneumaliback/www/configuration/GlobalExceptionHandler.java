@@ -1,7 +1,6 @@
 package com.pneumaliback.www.configuration;
 
 import com.pneumaliback.www.add.ErrorResponse;
-import com.pneumaliback.www.security.exceptions.AuthenticationException;
 import com.pneumaliback.www.security.exceptions.TokenExpiredException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;

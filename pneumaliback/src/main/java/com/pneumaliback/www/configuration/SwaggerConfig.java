@@ -15,7 +15,7 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("PneuMali - API de Vente de Pnen Au Mali")
+                        .title("PneuMali - API de Vente de Pneu Au Mali")
                         .description(
                                 "API REST pour la gestion d'un site de vente de pneu avec authentification JWT")
                         .version("1.0.0")
