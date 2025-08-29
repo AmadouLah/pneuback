@@ -1,6 +1,7 @@
 package com.pneumaliback.www.repository;
 
 import com.pneumaliback.www.entity.Product;
+import com.pneumaliback.www.enums.TireSeason;
 import com.pneumaliback.www.entity.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,9 +43,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<String> findAllDistinctSizes();
     
     // === Recherche par saison ===
-    List<Product> findBySeasonIgnoreCase(String season);
-    Page<Product> findBySeasonIgnoreCase(String season, Pageable pageable);
-    
+    List<Product> findBySeason(TireSeason season);
+
     @Query("SELECT DISTINCT p.season FROM Product p WHERE p.season IS NOT NULL ORDER BY p.season")
     List<String> findAllDistinctSeasons();
     
@@ -99,8 +100,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p ORDER BY SIZE(p.orderItems) DESC")
     List<Product> findBestSellingProducts(Pageable pageable);
     
-    @Query("SELECT p FROM Product p WHERE p.createdAt >= CURRENT_DATE - 30")
-    List<Product> findRecentProducts();
+    @Query("SELECT p FROM Product p WHERE p.createdAt >= :date")
+    List<Product> findRecentProducts(@Param("date") LocalDateTime date);
+
+
     
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.product.id = :productId")
     Double getAverageRating(@Param("productId") Long productId);

@@ -92,7 +92,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     boolean existsByEmail(String email);
 
-    boolean existsByUsername(String username);
     
     @Query("SELECT u FROM User u WHERE u.email = :email AND u.accountNonLocked = true")
     Optional<User> findByEmailAndAccountNonLocked(@Param("email") String email);
