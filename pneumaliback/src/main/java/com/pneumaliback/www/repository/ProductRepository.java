@@ -18,6 +18,10 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
+    // === Actifs ===
+    Page<Product> findByActiveTrue(Pageable pageable);
+    List<Product> findByCategoryAndActiveTrue(Category category);
+
     // === Recherche de base ===
     List<Product> findByNameContainingIgnoreCase(String name);
     Optional<Product> findByNameIgnoreCase(String name);
@@ -73,7 +77,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     void increaseStock(@Param("productId") Long productId, @Param("quantity") int quantity);
     
     // === Recherche combinée avancée ===
-    @Query("SELECT p FROM Product p WHERE " +
+    @Query("SELECT p FROM Product p WHERE p.active = true AND " +
            "(:category IS NULL OR p.category = :category) AND " +
            "(:brand IS NULL OR LOWER(p.brand) = LOWER(:brand)) AND " +
            "(:size IS NULL OR p.size = :size) AND " +
@@ -90,17 +94,17 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                  Pageable pageable);
     
     // === Recherche textuelle ===
-    @Query("SELECT p FROM Product p WHERE " +
+    @Query("SELECT p FROM Product p WHERE p.active = true AND " +
            "LOWER(p.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(p.brand) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(p.size) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
     Page<Product> searchProducts(@Param("searchTerm") String searchTerm, Pageable pageable);
     
     // === Statistiques et recommandations ===
-    @Query("SELECT p FROM Product p ORDER BY SIZE(p.orderItems) DESC")
+    @Query("SELECT p FROM Product p WHERE p.active = true ORDER BY SIZE(p.orderItems) DESC")
     List<Product> findBestSellingProducts(Pageable pageable);
     
-    @Query("SELECT p FROM Product p WHERE p.createdAt >= :date")
+    @Query("SELECT p FROM Product p WHERE p.active = true AND p.createdAt >= :date")
     List<Product> findRecentProducts(@Param("date") LocalDateTime date);
     
     // === Statistiques et recommandations ===

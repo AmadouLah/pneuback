@@ -18,6 +18,9 @@ public class Influenceur extends EntiteAuditable {
     @Column(nullable = false, precision = 5, scale = 2)
     private BigDecimal commissionRate;
 
+    @Column(length = 50, unique = true)
+    private String promoCode;
+
     @OneToOne
     private User user;
 }

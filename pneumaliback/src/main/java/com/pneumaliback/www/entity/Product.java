@@ -45,6 +45,15 @@ public class Product extends EntiteAuditable {
     @Column(length = 20)
     private VehicleType vehicleType;
 
+    @Column(length = 255)
+    private String imageUrl;
+
+    @Column(length = 1000)
+    private String description;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
     @ManyToOne(optional = false)
     private Category category;
 

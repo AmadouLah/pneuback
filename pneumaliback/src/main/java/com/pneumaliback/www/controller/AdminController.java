@@ -3,6 +3,13 @@ package com.pneumaliback.www.controller;
 import com.pneumaliback.www.entity.User;
 import com.pneumaliback.www.enums.Role;
 import com.pneumaliback.www.repository.UserRepository;
+import com.pneumaliback.www.entity.Order;
+import com.pneumaliback.www.entity.Commission;
+import com.pneumaliback.www.enums.CommissionStatus;
+import com.pneumaliback.www.repository.OrderRepository;
+import com.pneumaliback.www.repository.CommissionRepository;
+import com.pneumaliback.www.service.OrderService;
+import com.pneumaliback.www.service.CommissionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -25,6 +33,10 @@ import java.util.Optional;
 public class AdminController {
 
     private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
+    private final CommissionRepository commissionRepository;
+    private final OrderService orderService;
+    private final CommissionService commissionService;
 
     @GetMapping("/users")
     @Operation(summary = "Liste des utilisateurs", description = "Récupère la liste de tous les utilisateurs")
@@ -138,4 +150,48 @@ public class AdminController {
             long activeUsers,
             long lockedUsers) {
     }
+
+    @PutMapping("/orders/{orderId}/confirm")
+    @Operation(summary = "Confirmer une commande")
+    public ResponseEntity<Order> confirmOrder(@PathVariable Long orderId) {
+        Optional<Order> opt = orderRepository.findById(orderId);
+        if (opt.isEmpty()) return ResponseEntity.notFound().build();
+        Order order = opt.get();
+        orderService.confirm(order);
+        Order saved = orderRepository.save(order);
+        return ResponseEntity.ok(saved);
+    }
+
+    @GetMapping("/commissions")
+    @Operation(summary = "Liste des commissions")
+    public ResponseEntity<List<Commission>> listAllCommissions() {
+        return ResponseEntity.ok(commissionRepository.findAll());
+    }
+
+    @GetMapping("/commissions/influenceur/{influenceurId}")
+    @Operation(summary = "Commissions par influenceur")
+    public ResponseEntity<List<Commission>> listCommissionsByInfluenceur(@PathVariable Long influenceurId) {
+        return ResponseEntity.ok(commissionRepository.findByInfluenceurId(influenceurId));
+    }
+
+    @GetMapping("/commissions/influenceur/{influenceurId}/balance")
+    @Operation(summary = "Solde commissions influenceur")
+    public ResponseEntity<BalanceDTO> getInfluenceurBalance(@PathVariable Long influenceurId) {
+        BigDecimal total = commissionRepository.sumByInfluenceur(influenceurId);
+        BigDecimal paid = commissionRepository.sumByInfluenceurAndStatus(influenceurId, CommissionStatus.PAID);
+        BigDecimal pending = commissionRepository.sumByInfluenceurAndStatus(influenceurId, CommissionStatus.PENDING);
+        return ResponseEntity.ok(new BalanceDTO(total, paid, pending));
+    }
+
+    @PutMapping("/commissions/{commissionId}/pay")
+    @Operation(summary = "Marquer une commission comme payée")
+    public ResponseEntity<Commission> payCommission(@PathVariable Long commissionId) {
+        Optional<Commission> opt = commissionRepository.findById(commissionId);
+        if (opt.isEmpty()) return ResponseEntity.notFound().build();
+        Commission c = opt.get();
+        commissionService.markPaid(c);
+        return ResponseEntity.ok(c);
+    }
+
+    public record BalanceDTO(BigDecimal total, BigDecimal paid, BigDecimal pending) {}
 }

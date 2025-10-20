@@ -18,6 +18,12 @@ public class Category extends EntiteAuditable {
     @Column(nullable = false, length = 100)
     private String name;
 
+    @Column(length = 500)
+    private String description;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
     @OneToMany(mappedBy = "category")
     private List<Product> products = new ArrayList<>();
 }
