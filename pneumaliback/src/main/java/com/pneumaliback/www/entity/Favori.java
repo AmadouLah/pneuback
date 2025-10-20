@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
 public class Favori extends EntiteAuditable {
 
     @Column(length = 500)
-    private String commentairePersonnel;
+    private String personalComment;
 
     @Column(length = 255)
     private String tags;

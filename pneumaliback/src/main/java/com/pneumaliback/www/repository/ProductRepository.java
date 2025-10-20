@@ -102,9 +102,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     @Query("SELECT p FROM Product p WHERE p.createdAt >= :date")
     List<Product> findRecentProducts(@Param("date") LocalDateTime date);
-
-
     
+    // === Statistiques et recommandations ===
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.product.id = :productId")
     Double getAverageRating(@Param("productId") Long productId);
 }

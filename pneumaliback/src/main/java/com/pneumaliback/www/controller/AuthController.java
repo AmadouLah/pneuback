@@ -4,6 +4,11 @@ import com.pneumaliback.www.dto.AuthResponse;
 import com.pneumaliback.www.dto.LoginRequest;
 import com.pneumaliback.www.dto.RefreshTokenRequest;
 import com.pneumaliback.www.dto.RegisterRequest;
+import com.pneumaliback.www.dto.MessageResponse;
+import com.pneumaliback.www.dto.ResendVerificationRequest;
+import com.pneumaliback.www.dto.ForgotPasswordRequest;
+import com.pneumaliback.www.dto.ResetPasswordRequest;
+import com.pneumaliback.www.dto.VerificationRequest;
 import com.pneumaliback.www.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,10 +29,42 @@ public class AuthController {
     
     @PostMapping("/register")
     @Operation(summary = "Inscription d'un nouvel utilisateur", description = "Permet à un utilisateur de s'inscrire")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<MessageResponse> register(@Valid @RequestBody RegisterRequest request) {
         log.info("Tentative d'inscription pour l'email: {}", request.email());
-        AuthResponse response = authService.register(request);
+        MessageResponse response = authService.register(request);
         log.info("Inscription réussie pour l'email: {}", request.email());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/forgot-password/request")
+    @Operation(summary = "Demander réinitialisation", description = "Envoie un code de réinitialisation (cooldown 20s)")
+    public ResponseEntity<MessageResponse> requestPasswordReset(@Valid @RequestBody ForgotPasswordRequest request) {
+        log.info("Demande de réinitialisation pour l'email: {}", request.email());
+        MessageResponse response = authService.requestPasswordReset(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/forgot-password/confirm")
+    @Operation(summary = "Confirmer réinitialisation", description = "Valide le code et met à jour le mot de passe")
+    public ResponseEntity<MessageResponse> confirmPasswordReset(@Valid @RequestBody ResetPasswordRequest request) {
+        log.info("Confirmation de réinitialisation pour l'email: {}", request.email());
+        MessageResponse response = authService.confirmPasswordReset(request);
+        return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/verify")
+    @Operation(summary = "Vérification du compte", description = "Active le compte avec le code reçu par email")
+    public ResponseEntity<AuthResponse> verify(@Valid @RequestBody VerificationRequest request) {
+        log.info("Vérification de compte pour l'email: {}", request.email());
+        AuthResponse response = authService.verifyEmail(request);
+        return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/resend")
+    @Operation(summary = "Renvoi du code", description = "Renvoyer un nouveau code après 20 secondes")
+    public ResponseEntity<MessageResponse> resend(@Valid @RequestBody ResendVerificationRequest request) {
+        log.info("Renvoi de code pour l'email: {}", request.email());
+        MessageResponse response = authService.resendVerificationCode(request);
         return ResponseEntity.ok(response);
     }
     

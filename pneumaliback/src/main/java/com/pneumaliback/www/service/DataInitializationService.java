@@ -28,59 +28,55 @@ public class DataInitializationService implements CommandLineRunner {
     }
 
     private void initializeDefaultUsers() {
-        if (userRepository.count() == 0) {
-            log.info("Aucun utilisateur trouvé. Création des utilisateurs par défaut...");
+        List<DefaultUser> defaults = Arrays.asList(
+                new DefaultUser(
+                        "admin@pneumali.ml",
+                        "Admin@2024!",
+                        "Admin",
+                        "PneuMali",
+                        "+22312345678",
+                        Role.ADMIN),
+                new DefaultUser(
+                        "client@pneumali.ml",
+                        "Client#2024!",
+                        "Client",
+                        "Demo",
+                        "+22312345679",
+                        Role.CLIENT),
+                new DefaultUser(
+                        "influenceur@pneumali.ml",
+                        "Influenc3ur!2024",
+                        "Influenceur",
+                        "Demo",
+                        "+22312345680",
+                        Role.INFLUENCEUR));
 
-            List<User> defaultUsers = Arrays.asList(
-                    createDefaultUser(
-                            "admin@pneumali.ml",
-                            "admin123",
-                            "Admin",
-                            "PneuMali",
-                            "+22312345678",
-                            Role.ADMIN,
-                            "Compte administrateur par défaut"),
-                    createDefaultUser(
-                            "client@pneumali.ml",
-                            "client123",
-                            "Client",
-                            "Demo",
-                            "+22312345679",
-                            Role.CLIENT,
-                            "Compte client de démonstration"),
-                    createDefaultUser(
-                            "influenceur@pneumali.ml",
-                            "influenceur123",
-                            "Influenceur",
-                            "Demo",
-                            "+22312345680",
-                            Role.INFLUENCEUR,
-                            "Compte influenceur de démonstration"));
+        int created = 0;
+        for (DefaultUser du : defaults) {
+            if (userRepository.existsByEmail(du.email())) {
+                continue;
+            }
+            User user = buildUser(du);
+            userRepository.save(user);
+            created++;
+            log.info("Utilisateur par défaut créé: email={}, role={}", du.email(), du.role());
+        }
 
-            userRepository.saveAll(defaultUsers);
-            log.info("{} utilisateurs par défaut créés avec succès.", defaultUsers.size());
-
-            // Affichage des informations de connexion
-            log.info("=== UTILISATEURS PAR DÉFAUT CRÉÉS ===");
-            log.info("ADMIN: {} / {}", "admin@pneumali.ml", "admin123");
-            log.info("CLIENT: {} / {}", "client@pneumali.ml", "client123");
-            log.info("INFLUENCEUR: {} / {}", "influenceur@pneumali.ml", "influenceur123");
-            log.info("=====================================");
-
+        if (created == 0) {
+            log.info("Aucun utilisateur par défaut à créer (déjà présents).");
         } else {
-            log.info("Des utilisateurs existent déjà. Aucun utilisateur par défaut créé.");
+            log.info("{} utilisateur(s) par défaut créé(s).", created);
         }
     }
 
-    private User createDefaultUser(String email, String password, String firstName,
-            String lastName, String phoneNumber, Role role, String description) {
+    private User buildUser(DefaultUser du) {
         return User.builder()
-                .email(email)
-                .password(passwordEncoder.encode(password))
-                .firstName(firstName)
-                .lastName(lastName)
-                .phoneNumber(phoneNumber)
-                .role(role)
+                .email(du.email())
+                .password(passwordEncoder.encode(du.rawPassword()))
+                .firstName(du.firstName())
+                .lastName(du.lastName())
+                .phoneNumber(du.phone())
+                .role(du.role())
                 .accountNonExpired(true)
                 .accountNonLocked(true)
                 .credentialsNonExpired(true)
@@ -88,5 +84,14 @@ public class DataInitializationService implements CommandLineRunner {
                 .failedAttempts(0)
                 .lockTime(null)
                 .build();
+    }
+
+    private record DefaultUser(
+            String email,
+            String rawPassword,
+            String firstName,
+            String lastName,
+            String phone,
+            Role role) {
     }
 }

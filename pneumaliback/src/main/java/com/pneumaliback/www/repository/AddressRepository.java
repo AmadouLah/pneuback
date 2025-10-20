@@ -36,7 +36,7 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
     List<Address> findByUserId(@Param("userId") Long userId);
     
     @Query("SELECT a FROM Address a WHERE a.user.id = :userId ORDER BY a.createdAt DESC")
-    List<Address> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
+    Page<Address> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
     
     @Query("SELECT COUNT(a) FROM Address a WHERE a.user = :user")
     Long countByUser(@Param("user") User user);

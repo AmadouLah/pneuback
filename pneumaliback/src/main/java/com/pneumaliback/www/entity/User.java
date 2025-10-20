@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
+import com.pneumaliback.www.validation.StrongPassword;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,6 +33,7 @@ public class User extends EntiteAuditable implements UserDetails {
     private String email;
 
     @Column(nullable = false)
+    @StrongPassword
     private String password;
 
     @Column(nullable = false, length = 50)
@@ -44,6 +47,7 @@ public class User extends EntiteAuditable implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column
+    @Builder.Default
     private Country country = Country.MALI;
 
     @Enumerated(EnumType.STRING)
@@ -51,33 +55,60 @@ public class User extends EntiteAuditable implements UserDetails {
     private Role role;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean accountNonExpired = true;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean accountNonLocked = true;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean credentialsNonExpired = true;
 
     @Column(nullable = false)
-    private boolean enabled = true;
+    @Builder.Default
+    private boolean enabled = false;
 
     @Column(nullable = false)
+    @Builder.Default
     private int failedAttempts = 0;
 
     @Column
     private Instant lockTime;
 
+    @Column(length = 10)
+    private String verificationCode;
+
+    @Column
+    private Instant verificationExpiry;
+
+    @Column
+    private Instant verificationSentAt;
+
+    @Column(length = 10)
+    private String resetCode;
+
+    @Column
+    private Instant resetExpiry;
+
+    @Column
+    private Instant resetSentAt;
+
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<Order> orders = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<Favori> favoris = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<Address> addresses = new ArrayList<>();
 
     @Override
