@@ -52,20 +52,39 @@ public class DataInitializationService implements CommandLineRunner {
                         Role.INFLUENCEUR));
 
         int created = 0;
+        int updated = 0;
         for (DefaultUser du : defaults) {
-            if (userRepository.existsByEmail(du.email())) {
+            String email = du.email().trim();
+            var existingOpt = userRepository.findByEmailIgnoreCase(email);
+            if (existingOpt.isEmpty()) {
+                User user = buildUser(du);
+                userRepository.save(user);
+                created++;
+                log.info("Utilisateur par défaut créé: email={}, role={}", email, du.role());
                 continue;
             }
-            User user = buildUser(du);
-            userRepository.save(user);
-            created++;
-            log.info("Utilisateur par défaut créé: email={}, role={}", du.email(), du.role());
+
+            User existing = existingOpt.get();
+            boolean needUpdate = false;
+            if (!passwordEncoder.matches(du.rawPassword(), existing.getPassword())) {
+                existing.setPassword(passwordEncoder.encode(du.rawPassword()));
+                needUpdate = true;
+            }
+            if (!existing.isEnabled()) { existing.setEnabled(true); needUpdate = true; }
+            if (!existing.isAccountNonLocked()) { existing.setAccountNonLocked(true); existing.setFailedAttempts(0); existing.setLockTime(null); needUpdate = true; }
+            if (existing.getRole() != du.role()) { existing.setRole(du.role()); needUpdate = true; }
+
+            if (needUpdate) {
+                userRepository.save(existing);
+                updated++;
+                log.info("Utilisateur par défaut mis à jour: email={}, role={}, unlocked={}, enabled={}", email, existing.getRole(), existing.isAccountNonLocked(), existing.isEnabled());
+            }
         }
 
-        if (created == 0) {
-            log.info("Aucun utilisateur par défaut à créer (déjà présents).");
+        if (created > 0 || updated > 0) {
+            log.info("Synthèse init users -> créés: {}, mis à jour: {}", created, updated);
         } else {
-            log.info("{} utilisateur(s) par défaut créé(s).", created);
+            log.info("Utilisateurs par défaut déjà conformes.");
         }
     }
 

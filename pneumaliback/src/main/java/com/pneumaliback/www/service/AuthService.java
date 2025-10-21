@@ -76,8 +76,9 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         try {
+            String email = request.email() == null ? "" : request.email().trim();
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.email(), request.password()));
+                    new UsernamePasswordAuthenticationToken(email, request.password()));
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             User user = userRepository.findByEmail(userDetails.getUsername())

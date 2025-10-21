@@ -29,6 +29,6 @@ public abstract class EntiteAuditable {
     private LocalDateTime updatedAt;
 
     @Version
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "integer default 0")
     private Integer version = 0;
 }

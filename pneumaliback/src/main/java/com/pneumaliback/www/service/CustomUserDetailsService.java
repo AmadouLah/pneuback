@@ -18,11 +18,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmailAndAccountNonLocked(email)
+        String normalized = email == null ? "" : email.trim();
+        User user = userRepository.findByEmailIgnoreCase(normalized)
                 .orElseThrow(() -> {
-                    log.warn("Tentative de connexion avec un email inexistant ou un compte verrouillé: {}", email);
-                    return new UsernameNotFoundException("Utilisateur non trouvé ou compte verrouillé: " + email);
+                    log.warn("Tentative de connexion avec un email inexistant: {}", normalized);
+                    return new UsernameNotFoundException("Utilisateur non trouvé: " + normalized);
                 });
+        if (!user.isAccountNonLocked()) {
+            log.warn("Tentative de connexion avec un compte verrouillé: {}", normalized);
+            throw new UsernameNotFoundException("Compte verrouillé: " + normalized);
+        }
         
         log.debug("Utilisateur chargé: {}", email);
         return user;
