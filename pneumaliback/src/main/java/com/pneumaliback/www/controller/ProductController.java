@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -50,5 +51,12 @@ public class ProductController {
                     .orElseThrow(() -> new IllegalArgumentException("Catégorie introuvable"));
         }
         return ResponseEntity.ok(productService.findWithFilters(category, brand, size, season, minPrice, maxPrice, pageable));
+    }
+
+    @PostMapping
+    @Operation(summary = "Créer un produit")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Product> create(@RequestBody Product product) {
+        return ResponseEntity.ok(productService.save(product));
     }
 }

@@ -33,4 +33,8 @@ public class ProductService {
     public Page<Product> searchActive(String searchTerm, Pageable pageable) {
         return productRepository.searchProducts(searchTerm, pageable);
     }
+
+    public Product save(Product product) {
+        return productRepository.save(product);
+    }
 }

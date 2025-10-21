@@ -6,9 +6,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import com.pneumaliback.www.dto.PromotionCreateDTO;
 
 @RestController
 @RequestMapping("/api/promotions")
@@ -30,5 +32,12 @@ public class PromotionController {
     public ResponseEntity<Promotion> resolveFromInfluencer(@RequestParam String code) {
         Optional<Promotion> promo = promotionService.resolveFromInfluencerCode(code);
         return promo.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    @Operation(summary = "Créer une promotion")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Promotion> create(@RequestBody PromotionCreateDTO dto) {
+        return ResponseEntity.ok(promotionService.create(dto));
     }
 }
