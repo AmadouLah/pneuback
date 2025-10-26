@@ -4,6 +4,10 @@ import com.pneumaliback.www.dto.NotificationRechercheDTO;
 import com.pneumaliback.www.entity.Notification;
 import com.pneumaliback.www.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,73 +25,163 @@ import java.util.Map;
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
 @Slf4j
+@CrossOrigin(origins = "*")
 public class NotificationController {
 
     private final NotificationService notificationService;
 
+    private ResponseEntity<?> handleException(Exception e) {
+        if (e instanceof IllegalArgumentException) {
+            String msg = e.getMessage() != null ? e.getMessage() : "Requête invalide";
+            if (msg.toLowerCase().contains("introuvable") || msg.toLowerCase().contains("non trouv")) {
+                return ResponseEntity.status(404).body(java.util.Map.of("error", msg));
+            }
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", msg));
+        }
+        return ResponseEntity.internalServerError().body(java.util.Map.of("error", "Erreur interne du serveur", "message", e.getMessage()));
+    }
+
     @GetMapping("/{userId}")
     @Operation(summary = "Liste des notifications d'un utilisateur")
-    public ResponseEntity<Page<Notification>> list(@PathVariable Long userId, Pageable pageable) {
-        return ResponseEntity.ok(notificationService.list(userId, pageable));
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Liste récupérée", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Notification.class))),
+            @ApiResponse(responseCode = "400", description = "Paramètres invalides", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Erreur interne", content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<?> list(@PathVariable Long userId, Pageable pageable) {
+        try {
+            return ResponseEntity.ok(notificationService.list(userId, pageable));
+        } catch (Exception e) {
+            return handleException(e);
+        }
     }
 
     @GetMapping("/{userId}/non-lues")
     @Operation(summary = "Liste des notifications non lues d'un utilisateur")
-    public ResponseEntity<Page<Notification>> nonLues(@PathVariable Long userId, Pageable pageable) {
-        return ResponseEntity.ok(notificationService.unread(userId, pageable));
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Liste récupérée"),
+            @ApiResponse(responseCode = "400", description = "Paramètres invalides", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Erreur interne", content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<?> nonLues(@PathVariable Long userId, Pageable pageable) {
+        try {
+            return ResponseEntity.ok(notificationService.unread(userId, pageable));
+        } catch (Exception e) {
+            return handleException(e);
+        }
     }
 
     @PostMapping("/rechercher")
     @Operation(summary = "Recherche avancée de notifications")
-    public ResponseEntity<Page<Notification>> rechercher(@RequestBody NotificationRechercheDTO criteres,
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Résultats récupérés"),
+            @ApiResponse(responseCode = "400", description = "Requête invalide", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Erreur interne", content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<?> rechercher(@RequestBody NotificationRechercheDTO criteres,
             Pageable pageable) {
-        return ResponseEntity.ok(notificationService.search(criteres, pageable));
+        try {
+            return ResponseEntity.ok(notificationService.search(criteres, pageable));
+        } catch (Exception e) {
+            return handleException(e);
+        }
     }
 
     @PostMapping("/{id}/lu")
     @Operation(summary = "Marquer une notification comme lue")
-    public ResponseEntity<Void> marquerLu(@PathVariable Long id, @RequestParam Long userId) {
-        notificationService.markAsRead(id, userId);
-        // Envoyer le nouveau count via WebSocket
-        notificationService.sendUnreadCount(
-                notificationService.findUserById(userId));
-        return ResponseEntity.ok().build();
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Notification marquée lue"),
+            @ApiResponse(responseCode = "400", description = "Paramètres invalides", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "Notification ou utilisateur introuvable", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Erreur interne", content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<?> marquerLu(@PathVariable Long id, @RequestParam Long userId) {
+        try {
+            notificationService.markAsRead(id, userId);
+            notificationService.sendUnreadCount(notificationService.findUserById(userId));
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return handleException(e);
+        }
     }
 
     @PutMapping("/{userId}/marquer-toutes-lues")
     @Operation(summary = "Marquer toutes les notifications comme lues")
-    public ResponseEntity<Integer> marquerToutesCommeLues(@PathVariable Long userId) {
-        int count = notificationService.markAllAsRead(userId);
-        // Envoyer le nouveau count via WebSocket (0 car toutes marquées comme lues)
-        notificationService.sendUnreadCount(
-                notificationService.findUserById(userId));
-        return ResponseEntity.ok(count);
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Notifications marquées lues"),
+            @ApiResponse(responseCode = "400", description = "Paramètres invalides", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Erreur interne", content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<?> marquerToutesCommeLues(@PathVariable Long userId) {
+        try {
+            int count = notificationService.markAllAsRead(userId);
+            notificationService.sendUnreadCount(notificationService.findUserById(userId));
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            return handleException(e);
+        }
     }
 
     @GetMapping("/{userId}/count/non-lues")
     @Operation(summary = "Compter les notifications non lues")
-    public ResponseEntity<Long> countNonLues(@PathVariable Long userId) {
-        return ResponseEntity.ok(notificationService.countUnread(userId));
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Compteur récupéré"),
+            @ApiResponse(responseCode = "400", description = "Paramètres invalides", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Erreur interne", content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<?> countNonLues(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(notificationService.countUnread(userId));
+        } catch (Exception e) {
+            return handleException(e);
+        }
     }
 
     @GetMapping("/{userId}/count/non-lues/{type}")
     @Operation(summary = "Compter les notifications non lues par type")
-    public ResponseEntity<Long> countNonLuesParType(@PathVariable Long userId, @PathVariable String type) {
-        return ResponseEntity.ok(notificationService.countUnreadByType(userId, type));
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Compteur récupéré"),
+            @ApiResponse(responseCode = "400", description = "Paramètres invalides", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Erreur interne", content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<?> countNonLuesParType(@PathVariable Long userId, @PathVariable String type) {
+        try {
+            return ResponseEntity.ok(notificationService.countUnreadByType(userId, type));
+        } catch (Exception e) {
+            return handleException(e);
+        }
     }
 
     @GetMapping("/{userId}/statistiques")
     @Operation(summary = "Statistiques des notifications par type")
-    public ResponseEntity<Map<String, Long>> statistiquesParType(@PathVariable Long userId) {
-        return ResponseEntity.ok(notificationService.statisticsByType(userId));
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Statistiques récupérées"),
+            @ApiResponse(responseCode = "400", description = "Paramètres invalides", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Erreur interne", content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<?> statistiquesParType(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(notificationService.statisticsByType(userId));
+        } catch (Exception e) {
+            return handleException(e);
+        }
     }
 
     @DeleteMapping("/{userId}/nettoyer")
     @Operation(summary = "Nettoyer les anciennes notifications")
-    public ResponseEntity<Integer> nettoyerAnciennes(@PathVariable Long userId,
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Nettoyage effectué"),
+            @ApiResponse(responseCode = "400", description = "Paramètres invalides", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Erreur interne", content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<?> nettoyerAnciennes(@PathVariable Long userId,
             @RequestParam(defaultValue = "30") int joursRetention) {
-        int count = notificationService.cleanupOld(userId, joursRetention);
-        return ResponseEntity.ok(count);
+        try {
+            int count = notificationService.cleanupOld(userId, joursRetention);
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            return handleException(e);
+        }
     }
 
     // ===== ENDPOINTS WEBSOCKET =====

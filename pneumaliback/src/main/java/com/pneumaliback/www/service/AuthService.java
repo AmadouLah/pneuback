@@ -88,7 +88,7 @@ public class AuthService {
             if (user.getFailedAttempts() > 0) {
                 user.setFailedAttempts(0);
                 user.setLockTime(null);
-                userRepository.save(user);
+                userRepository.saveAndFlush(user);
             }
 
             // Génération des tokens
@@ -166,9 +166,7 @@ public class AuthService {
         }
 
         user.setEnabled(true);
-        user.setVerificationCode(null);
-        user.setVerificationExpiry(null);
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         String accessToken = jwtService.generateToken(userDetails);
@@ -186,7 +184,7 @@ public class AuthService {
                 user.setLockTime(Instant.now());
             }
 
-            userRepository.save(user);
+            userRepository.saveAndFlush(user);
         });
     }
 
@@ -216,7 +214,7 @@ public class AuthService {
         user.setVerificationCode(code);
         user.setVerificationExpiry(expiry);
         user.setVerificationSentAt(Instant.now());
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
         mailService.sendVerificationEmail(user.getEmail(), code);
     }
 
@@ -267,7 +265,7 @@ public class AuthService {
         user.setResetCode(null);
         user.setResetExpiry(null);
         user.setResetSentAt(null);
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
 
         return new MessageResponse("Mot de passe réinitialisé avec succès.");
     }
@@ -278,7 +276,7 @@ public class AuthService {
         user.setResetCode(code);
         user.setResetExpiry(expiry);
         user.setResetSentAt(Instant.now());
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
         mailService.sendPasswordResetEmail(user.getEmail(), code);
     }
 }
