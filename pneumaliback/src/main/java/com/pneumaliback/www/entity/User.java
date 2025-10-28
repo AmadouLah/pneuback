@@ -77,7 +77,7 @@ public class User extends EntiteAuditable implements UserDetails {
     @Column
     private Instant lockTime;
 
-    @Column(length = 10)
+    @Column(length = 120)
     private String verificationCode;
 
     @Column
@@ -85,6 +85,18 @@ public class User extends EntiteAuditable implements UserDetails {
 
     @Column
     private Instant verificationSentAt;
+
+    @Column(length = 100)
+    private String previousEmail; // Stocke l'ancien email lors du changement
+
+    @Column
+    private Integer otpAttempts;
+
+    @Column
+    private Instant otpLockedUntil;
+
+    @Column
+    private Integer otpResendCount;
 
     @Column(length = 10)
     private String resetCode;
@@ -98,6 +110,12 @@ public class User extends EntiteAuditable implements UserDetails {
     @OneToMany(mappedBy = "user")
     @Builder.Default
     private List<Order> orders = new ArrayList<>();
+
+    @Column(length = 45)
+    private String lastLoginIp;
+
+    @Column(length = 255)
+    private String lastLoginUserAgent;
 
     @OneToMany(mappedBy = "user")
     @Builder.Default

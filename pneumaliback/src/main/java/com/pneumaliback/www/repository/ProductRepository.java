@@ -102,7 +102,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     // === Statistiques et recommandations ===
     @Query("SELECT p FROM Product p WHERE p.active = true ORDER BY SIZE(p.orderItems) DESC")
-    List<Product> findBestSellingProducts(Pageable pageable);
+    Page<Product> findPopular(Pageable pageable);
     
     @Query("SELECT p FROM Product p WHERE p.active = true AND p.createdAt >= :date")
     List<Product> findRecentProducts(@Param("date") LocalDateTime date);
@@ -110,4 +110,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // === Statistiques et recommandations ===
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.product.id = :productId")
     Double getAverageRating(@Param("productId") Long productId);
+
+    // === Dimensions (width/profile/diameter) sur la base du champ size ===
+    @Query("SELECT p FROM Product p WHERE p.active = true AND p.stock > 0 AND " +
+           "(:width IS NULL OR LOWER(p.size) LIKE LOWER(CONCAT('%', :width, '%'))) AND " +
+           "(:profile IS NULL OR LOWER(p.size) LIKE LOWER(CONCAT('%', :profile, '%'))) AND " +
+           "(:diameter IS NULL OR LOWER(p.size) LIKE LOWER(CONCAT('%', :diameter, '%')))")
+    Page<Product> findByDimensions(@Param("width") String width,
+                                   @Param("profile") String profile,
+                                   @Param("diameter") String diameter,
+                                   Pageable pageable);
 }

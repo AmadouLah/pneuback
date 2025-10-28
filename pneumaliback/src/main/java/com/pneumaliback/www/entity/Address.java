@@ -1,5 +1,7 @@
 package com.pneumaliback.www.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pneumaliback.www.enums.Country;
 
 import jakarta.persistence.Column;
@@ -34,6 +36,14 @@ public class Address extends EntiteAuditable {
     @Column(length = 50)
     private String postalCode;
 
+    @Column(length = 20)
+    private String phoneNumber;
+
+    @JsonProperty("default")
+    @Column(nullable = false)
+    private boolean isDefault = false;
+
+    @JsonIgnore
     @ManyToOne(optional = false)
     private User user;
 }

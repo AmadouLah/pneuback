@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,4 +38,17 @@ public class ProductService {
     public Product save(Product product) {
         return productRepository.save(product);
     }
+
+    public Page<Product> popular(Pageable pageable) {
+        return productRepository.findPopular(pageable);
+    }
+
+    public List<String> brands() {
+        return productRepository.findAllDistinctBrands();
+    }
+
+    public Page<Product> findByDimensions(String width, String profile, String diameter, Pageable pageable) {
+        return productRepository.findByDimensions(width, profile, diameter, pageable);
+    }
 }
+

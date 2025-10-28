@@ -3,7 +3,8 @@ package com.pneumaliback.www.enums;
 public enum Role {
     ADMIN("Administrateur"),
     CLIENT("Client"),
-    INFLUENCEUR("Influenceur");
+    INFLUENCEUR("Influenceur"),
+    DEVELOPER("Développeur");
     
     private final String displayName;
     

@@ -1,0 +1,31 @@
+{"ip":null,"type":"EXISTING_USER_RECONNECTION","ua":null,"email":"amadoulandoure89@gmail.com","ts":"2025-10-28T00:14:43.099559600Z"}
+{"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"amadoulandoure89@gmail.com","ts":"2025-10-28T00:14:47.261516700Z"}
+{"meta":{"resendCount":0,"isNewUser":false},"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"amadoulandoure89@gmail.com","ts":"2025-10-28T00:14:47.261516700Z"}
+{"ip":null,"type":"EXISTING_USER_RECONNECTION","ua":null,"email":"amadoulandoure89@gmail.com","ts":"2025-10-28T00:19:00.808185900Z"}
+{"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"amadoulandoure89@gmail.com","ts":"2025-10-28T00:19:04.602967900Z"}
+{"meta":{"resendCount":0,"isNewUser":false},"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"amadoulandoure89@gmail.com","ts":"2025-10-28T00:19:04.609910100Z"}
+{"ip":null,"type":"CODE_VERIFIED","ua":null,"email":"amadoulandoure89@gmail.com","ts":"2025-10-28T00:19:19.840564400Z"}
+{"ip":null,"type":"EXISTING_USER_RECONNECTION","ua":null,"email":"landoureamadou89@gmail.com","ts":"2025-10-28T00:51:44.042419800Z"}
+{"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"landoureamadou89@gmail.com","ts":"2025-10-28T00:51:49.690663100Z"}
+{"meta":{"resendCount":0,"isNewUser":false},"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"landoureamadou89@gmail.com","ts":"2025-10-28T00:51:49.690663100Z"}
+{"ip":null,"type":"CODE_VERIFIED","ua":null,"email":"landoureamadou89@gmail.com","ts":"2025-10-28T00:52:03.055152500Z"}
+{"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:07:16.641984600Z"}
+{"meta":{"reason":"FIRST_LOGIN_OR_DEVELOPER"},"ip":"0:0:0:0:0:0:0:1","type":"2FA_REQUIRED","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36","email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:07:16.645987500Z"}
+{"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:14:03.000610900Z"}
+{"meta":{"reason":"FIRST_LOGIN_OR_DEVELOPER"},"ip":"0:0:0:0:0:0:0:1","type":"2FA_REQUIRED","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36","email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:14:03.000610900Z"}
+{"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:18:52.665283100Z"}
+{"meta":{"reason":"ADMIN_OR_DEVELOPER_STANDARD_2FA"},"ip":"0:0:0:0:0:0:0:1","type":"2FA_REQUIRED","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36","email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:18:52.671270900Z"}
+{"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:25:38.158541400Z"}
+{"meta":{"reason":"ADMIN_OR_DEVELOPER_STANDARD_2FA"},"ip":"0:0:0:0:0:0:0:1","type":"2FA_REQUIRED","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36","email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:25:38.159521700Z"}
+{"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:30:34.988120600Z"}
+{"meta":{"reason":"ADMIN_OR_DEVELOPER_STANDARD_2FA"},"ip":"0:0:0:0:0:0:0:1","type":"2FA_REQUIRED","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36","email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:30:35.006210300Z"}
+{"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:39:05.643446700Z"}
+{"meta":{"reason":"ADMIN_OR_DEVELOPER_STANDARD_2FA"},"ip":"0:0:0:0:0:0:0:1","type":"2FA_REQUIRED","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36","email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:39:05.644492100Z"}
+{"ip":null,"type":"CODE_VERIFIED","ua":null,"email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:39:19.905674600Z"}
+{"ip":null,"type":"EXISTING_USER_RECONNECTION","ua":null,"email":"phillippeterss486@gmail.com","ts":"2025-10-28T01:54:59.794713500Z"}
+{"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"phillippeterss486@gmail.com","ts":"2025-10-28T01:55:05.443315100Z"}
+{"meta":{"isNewUser":false,"resendCount":0},"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"phillippeterss486@gmail.com","ts":"2025-10-28T01:55:05.444315900Z"}
+{"ip":null,"type":"CODE_VERIFIED","ua":null,"email":"phillippeterss486@gmail.com","ts":"2025-10-28T01:55:25.009153100Z"}
+{"ip":null,"type":"MAGIC_CODE_SENT","ua":null,"email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:56:34.482164100Z"}
+{"meta":{"reason":"ADMIN_OR_DEVELOPER_STANDARD_2FA"},"ip":"0:0:0:0:0:0:0:1","type":"2FA_REQUIRED","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36","email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:56:34.483161900Z"}
+{"ip":null,"type":"CODE_VERIFIED","ua":null,"email":"amadoulandoure004@gmail.com","ts":"2025-10-28T01:56:43.321828800Z"}

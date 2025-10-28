@@ -6,6 +6,7 @@ import com.pneumaliback.www.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Order(1)
 public class DataInitializationService implements CommandLineRunner {
 
     private final UserRepository userRepository;
@@ -37,14 +39,28 @@ public class DataInitializationService implements CommandLineRunner {
                         "+22312345678",
                         Role.ADMIN),
                 new DefaultUser(
-                        "client@pneumali.ml",
+                        "amadoulandoure004@gmail.com",
+                        "F4@655#&3%@&27^!3*3o",
+                        "Admin",
+                        "PneuMali",
+                        "+22370911112",
+                        Role.ADMIN),
+                new DefaultUser(
+                        "dev@pneumali.ml",
+                        "Dev@2024!",
+                        "Developpeur",
+                        "PneuMali",
+                        "+22312345677",
+                        Role.DEVELOPER),
+                new DefaultUser(
+                        "contactlandoure@gmail.com",
                         "Client#2024!",
                         "Client",
                         "Demo",
                         "+22312345679",
                         Role.CLIENT),
                 new DefaultUser(
-                        "influenceur@pneumali.ml",
+                        "phillippeterss486@gmail.com",
                         "Influenc3ur!2024",
                         "Influenceur",
                         "Demo",
@@ -70,14 +86,40 @@ public class DataInitializationService implements CommandLineRunner {
                 existing.setPassword(passwordEncoder.encode(du.rawPassword()));
                 needUpdate = true;
             }
-            if (!existing.isEnabled()) { existing.setEnabled(true); needUpdate = true; }
-            if (!existing.isAccountNonLocked()) { existing.setAccountNonLocked(true); existing.setFailedAttempts(0); existing.setLockTime(null); needUpdate = true; }
-            if (existing.getRole() != du.role()) { existing.setRole(du.role()); needUpdate = true; }
+            if (!existing.isEnabled()) {
+                existing.setEnabled(true);
+                needUpdate = true;
+            }
+            if (!existing.isAccountNonLocked()) {
+                existing.setAccountNonLocked(true);
+                existing.setFailedAttempts(0);
+                existing.setLockTime(null);
+                needUpdate = true;
+            }
+            if (existing.getRole() != du.role()) {
+                existing.setRole(du.role());
+                needUpdate = true;
+            }
+
+            // Nettoyage de l'état OTP / vérification pour les comptes par défaut
+            if (existing.getVerificationCode() != null || existing.getVerificationExpiry() != null
+                    || existing.getVerificationSentAt() != null
+                    || existing.getOtpAttempts() != null || existing.getOtpLockedUntil() != null
+                    || existing.getOtpResendCount() != null) {
+                existing.setVerificationCode(null);
+                existing.setVerificationExpiry(null);
+                existing.setVerificationSentAt(null);
+                existing.setOtpAttempts(0);
+                existing.setOtpLockedUntil(null);
+                existing.setOtpResendCount(0);
+                needUpdate = true;
+            }
 
             if (needUpdate) {
                 userRepository.save(existing);
                 updated++;
-                log.info("Utilisateur par défaut mis à jour: email={}, role={}, unlocked={}, enabled={}", email, existing.getRole(), existing.isAccountNonLocked(), existing.isEnabled());
+                log.info("Utilisateur par défaut mis à jour: email={}, role={}, unlocked={}, enabled={}", email,
+                        existing.getRole(), existing.isAccountNonLocked(), existing.isEnabled());
             }
         }
 
@@ -102,6 +144,12 @@ public class DataInitializationService implements CommandLineRunner {
                 .enabled(true)
                 .failedAttempts(0)
                 .lockTime(null)
+                .verificationCode(null)
+                .verificationExpiry(null)
+                .verificationSentAt(null)
+                .otpAttempts(0)
+                .otpLockedUntil(null)
+                .otpResendCount(0)
                 .build();
     }
 

@@ -110,5 +110,51 @@ public class ProductController {
             return handleException(e);
         }
     }
+
+    @GetMapping("/popular")
+    @Operation(summary = "Produits populaires", description = "Les plus vendus")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Liste récupérée", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Product.class))),
+            @ApiResponse(responseCode = "500", description = "Erreur interne", content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<?> popular(Pageable pageable) {
+        try {
+            return ResponseEntity.ok(productService.popular(pageable));
+        } catch (Exception e) {
+            return handleException(e);
+        }
+    }
+
+    @GetMapping("/brands")
+    @Operation(summary = "Marques disponibles (actives)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Liste des marques"),
+            @ApiResponse(responseCode = "500", description = "Erreur interne", content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<?> brands() {
+        try {
+            return ResponseEntity.ok(productService.brands());
+        } catch (Exception e) {
+            return handleException(e);
+        }
+    }
+
+    @GetMapping("/dimensions")
+    @Operation(summary = "Recherche par dimensions", description = "Recherche par largeur, profil et diamètre (ex: 235 / 45 / 17)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Résultats récupérés"),
+            @ApiResponse(responseCode = "400", description = "Paramètres invalides", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Erreur interne", content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<?> byDimensions(@RequestParam(required = false) String width,
+                                          @RequestParam(required = false) String profile,
+                                          @RequestParam(required = false) String diameter,
+                                          Pageable pageable) {
+        try {
+            return ResponseEntity.ok(productService.findByDimensions(width, profile, diameter, pageable));
+        } catch (Exception e) {
+            return handleException(e);
+        }
+    }
 }
 
