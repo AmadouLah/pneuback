@@ -4,8 +4,8 @@ services:
     runtime: docker
     region: oregon
     plan: free
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
+    dockerfilePath: ./pneumaliback/Dockerfile
+    dockerContext: ./pneumaliback
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod,render
