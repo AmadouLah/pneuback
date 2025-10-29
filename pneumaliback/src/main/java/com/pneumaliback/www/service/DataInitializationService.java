@@ -24,9 +24,19 @@ public class DataInitializationService implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        log.info("Début de l'initialisation des données par défaut...");
-        initializeDefaultUsers();
-        log.info("Initialisation des données par défaut terminée.");
+        try {
+            log.info("Début de l'initialisation des données par défaut...");
+            // Attendre un peu pour éviter les conflits au démarrage
+            Thread.sleep(500);
+            initializeDefaultUsers();
+            log.info("Initialisation des données par défaut terminée.");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Initialisation interrompue", e);
+        } catch (Exception e) {
+            log.error("Erreur lors de l'initialisation des données par défaut", e);
+            // Ne pas lancer d'exception pour ne pas empêcher le démarrage de l'application
+        }
     }
 
     private void initializeDefaultUsers() {
@@ -69,62 +79,83 @@ public class DataInitializationService implements CommandLineRunner {
 
         int created = 0;
         int updated = 0;
+        int skipped = 0;
+
         for (DefaultUser du : defaults) {
-            String email = du.email().trim();
-            var existingOpt = userRepository.findByEmailIgnoreCase(email);
-            if (existingOpt.isEmpty()) {
-                User user = buildUser(du);
-                userRepository.save(user);
-                created++;
-                log.info("Utilisateur par défaut créé: email={}, role={}", email, du.role());
-                continue;
-            }
+            try {
+                String email = du.email().trim();
+                var existingOpt = userRepository.findByEmailIgnoreCase(email);
 
-            User existing = existingOpt.get();
-            boolean needUpdate = false;
-            if (!passwordEncoder.matches(du.rawPassword(), existing.getPassword())) {
-                existing.setPassword(passwordEncoder.encode(du.rawPassword()));
-                needUpdate = true;
-            }
-            if (!existing.isEnabled()) {
-                existing.setEnabled(true);
-                needUpdate = true;
-            }
-            if (!existing.isAccountNonLocked()) {
-                existing.setAccountNonLocked(true);
-                existing.setFailedAttempts(0);
-                existing.setLockTime(null);
-                needUpdate = true;
-            }
-            if (existing.getRole() != du.role()) {
-                existing.setRole(du.role());
-                needUpdate = true;
-            }
+                if (existingOpt.isEmpty()) {
+                    User user = buildUser(du);
+                    userRepository.save(user);
+                    userRepository.flush();
+                    created++;
+                    log.info("Utilisateur par défaut créé: email={}, role={}", email, du.role());
+                    continue;
+                }
 
-            // Nettoyage de l'état OTP / vérification pour les comptes par défaut
-            if (existing.getVerificationCode() != null || existing.getVerificationExpiry() != null
-                    || existing.getVerificationSentAt() != null
-                    || existing.getOtpAttempts() != null || existing.getOtpLockedUntil() != null
-                    || existing.getOtpResendCount() != null) {
-                existing.setVerificationCode(null);
-                existing.setVerificationExpiry(null);
-                existing.setVerificationSentAt(null);
-                existing.setOtpAttempts(0);
-                existing.setOtpLockedUntil(null);
-                existing.setOtpResendCount(0);
-                needUpdate = true;
-            }
+                User existing = existingOpt.get();
 
-            if (needUpdate) {
-                userRepository.save(existing);
-                updated++;
-                log.info("Utilisateur par défaut mis à jour: email={}, role={}, unlocked={}, enabled={}", email,
-                        existing.getRole(), existing.isAccountNonLocked(), existing.isEnabled());
+                // Ne pas toucher aux utilisateurs en cours d'authentification
+                if (existing.getVerificationSentAt() != null &&
+                        java.time.Instant.now().isBefore(existing.getVerificationSentAt().plusSeconds(60))) {
+                    log.debug("Utilisateur {} en cours d'authentification, skip", email);
+                    skipped++;
+                    continue;
+                }
+
+                boolean needUpdate = false;
+                if (!passwordEncoder.matches(du.rawPassword(), existing.getPassword())) {
+                    existing.setPassword(passwordEncoder.encode(du.rawPassword()));
+                    needUpdate = true;
+                }
+                if (!existing.isEnabled()) {
+                    existing.setEnabled(true);
+                    needUpdate = true;
+                }
+                if (!existing.isAccountNonLocked()) {
+                    existing.setAccountNonLocked(true);
+                    existing.setFailedAttempts(0);
+                    existing.setLockTime(null);
+                    needUpdate = true;
+                }
+                if (existing.getRole() != du.role()) {
+                    existing.setRole(du.role());
+                    needUpdate = true;
+                }
+
+                // Nettoyage de l'état OTP / vérification UNIQUEMENT pour les comptes par défaut
+                // ADMIN/DEV
+                if ((du.role() == Role.ADMIN || du.role() == Role.DEVELOPER) &&
+                        (existing.getVerificationCode() != null || existing.getVerificationExpiry() != null
+                                || existing.getVerificationSentAt() != null
+                                || existing.getOtpAttempts() != null || existing.getOtpLockedUntil() != null
+                                || existing.getOtpResendCount() != null)) {
+                    existing.setVerificationCode(null);
+                    existing.setVerificationExpiry(null);
+                    existing.setVerificationSentAt(null);
+                    existing.setOtpAttempts(0);
+                    existing.setOtpLockedUntil(null);
+                    existing.setOtpResendCount(0);
+                    needUpdate = true;
+                }
+
+                if (needUpdate) {
+                    userRepository.save(existing);
+                    userRepository.flush();
+                    updated++;
+                    log.info("Utilisateur par défaut mis à jour: email={}, role={}, unlocked={}, enabled={}", email,
+                            existing.getRole(), existing.isAccountNonLocked(), existing.isEnabled());
+                }
+            } catch (Exception e) {
+                log.error("Erreur lors de l'initialisation de l'utilisateur {}: {}", du.email(), e.getMessage());
+                // Continuer avec les autres utilisateurs
             }
         }
 
-        if (created > 0 || updated > 0) {
-            log.info("Synthèse init users -> créés: {}, mis à jour: {}", created, updated);
+        if (created > 0 || updated > 0 || skipped > 0) {
+            log.info("Synthèse init users -> créés: {}, mis à jour: {}, ignorés: {}", created, updated, skipped);
         } else {
             log.info("Utilisateurs par défaut déjà conformes.");
         }

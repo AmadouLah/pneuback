@@ -140,20 +140,35 @@ public class AuthService {
             throw new RuntimeException("Compte déjà activé");
         }
 
-        // Validation du cooldown anti-spam
         Instant now = Instant.now();
+
+        // Réinitialiser le compteur si le code précédent a expiré
+        if (user.getVerificationExpiry() != null && now.isAfter(user.getVerificationExpiry())) {
+            user.setOtpResendCount(0);
+            user.setOtpAttempts(0);
+            user.setOtpLockedUntil(null);
+            log.debug("Code expiré, réinitialisation des compteurs pour : {}", request.email());
+        }
+
+        // Validation du cooldown anti-spam
         if (user.getVerificationSentAt() != null && now.isBefore(user.getVerificationSentAt().plusSeconds(20))) {
             throw new RuntimeException("Veuillez patienter avant de renvoyer le code");
         }
 
-        // Limitation du nombre de renvois
+        // Déterminer si c'est un premier envoi ou un renvoi
         Integer count = user.getOtpResendCount() == null ? 0 : user.getOtpResendCount();
-        if (count >= 3) {
-            throw new RuntimeException("Nombre maximum de renvois atteint");
+        boolean isFirstSend = (count == 0) || (user.getVerificationCode() == null);
+
+        // Vérifier la limite de renvois (le premier envoi ne compte pas)
+        if (!isFirstSend && count >= 3) {
+            throw new RuntimeException("Nombre maximum de renvois atteint. Veuillez attendre que le code expire.");
         }
 
-        // Renvoyer le code
-        user.setOtpResendCount(count + 1);
+        // Incrémenter uniquement si c'est un renvoi (pas le premier envoi)
+        if (!isFirstSend) {
+            user.setOtpResendCount(count + 1);
+        }
+
         userRepository.saveAndFlush(user);
         sendVerificationCode(user, true);
 
@@ -173,20 +188,35 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-        // Validation du cooldown anti-spam
         Instant now = Instant.now();
+
+        // Réinitialiser le compteur si le code précédent a expiré
+        if (user.getVerificationExpiry() != null && now.isAfter(user.getVerificationExpiry())) {
+            user.setOtpResendCount(0);
+            user.setOtpAttempts(0);
+            user.setOtpLockedUntil(null);
+            log.debug("Code expiré, réinitialisation des compteurs pour : {}", email);
+        }
+
+        // Validation du cooldown anti-spam
         if (user.getVerificationSentAt() != null && now.isBefore(user.getVerificationSentAt().plusSeconds(20))) {
             throw new RuntimeException("Veuillez patienter avant de renvoyer le code");
         }
 
-        // Limitation du nombre de renvois
+        // Déterminer si c'est un premier envoi ou un renvoi
         Integer count = user.getOtpResendCount() == null ? 0 : user.getOtpResendCount();
-        if (count >= 3) {
-            throw new RuntimeException("Nombre maximum de renvois atteint");
+        boolean isFirstSend = (count == 0) || (user.getVerificationCode() == null);
+
+        // Vérifier la limite de renvois (le premier envoi ne compte pas)
+        if (!isFirstSend && count >= 3) {
+            throw new RuntimeException("Nombre maximum de renvois atteint. Veuillez attendre que le code expire.");
         }
 
-        // Renvoyer le code
-        user.setOtpResendCount(count + 1);
+        // Incrémenter uniquement si c'est un renvoi (pas le premier envoi)
+        if (!isFirstSend) {
+            user.setOtpResendCount(count + 1);
+        }
+
         userRepository.saveAndFlush(user);
         sendVerificationCode(user, true);
 
@@ -331,7 +361,13 @@ public class AuthService {
      * - Si l'email existe déjà → CONNEXION (réutilisation du compte existant)
      * - Dans les DEUX cas, on envoie un code OTP
      * - Le compte n'est JAMAIS recréé, même après expiration du token
+     * 
+     * Limites de sécurité :
+     * - Cooldown de 20s entre chaque envoi
+     * - Maximum 3 renvois (après le premier envoi initial)
+     * - Réinitialisation automatique après expiration du code
      */
+    @Transactional
     public MessageResponse magicStart(String email) {
         String normalized = email == null ? "" : email.trim().toLowerCase();
         if (normalized.isEmpty())
@@ -366,25 +402,57 @@ public class AuthService {
             auditService.logAuthEvent("EXISTING_USER_RECONNECTION", user.getEmail(), null, null, null);
         }
 
-        // Étape 2 : Validation du cooldown (anti-spam)
-        if (user.getVerificationSentAt() != null
-                && Instant.now().isBefore(user.getVerificationSentAt().plusSeconds(20))) {
+        Instant now = Instant.now();
+
+        // Étape 2 : Réinitialiser le compteur si le code précédent a expiré
+        if (user.getVerificationExpiry() != null && now.isAfter(user.getVerificationExpiry())) {
+            user.setOtpResendCount(0);
+            user.setOtpAttempts(0);
+            user.setOtpLockedUntil(null);
+            log.debug("Code expiré, réinitialisation des compteurs pour : {}", normalized);
+        }
+
+        // Étape 3 : Validation du cooldown (anti-spam)
+        if (user.getVerificationSentAt() != null && now.isBefore(user.getVerificationSentAt().plusSeconds(20))) {
             throw new RuntimeException("Veuillez patienter avant de renvoyer le code");
         }
 
-        // Étape 3 : Limitation du nombre de renvois
+        // Étape 4 : Déterminer si c'est un premier envoi ou un renvoi
         Integer count = user.getOtpResendCount() == null ? 0 : user.getOtpResendCount();
-        if (count >= 3) {
-            throw new RuntimeException("Nombre maximum de renvois atteint");
+        boolean isFirstSend = (count == 0) || (user.getVerificationCode() == null);
+
+        // Étape 5 : Vérifier la limite de renvois (le premier envoi ne compte pas)
+        if (!isFirstSend && count >= 3) {
+            throw new RuntimeException("Nombre maximum de renvois atteint. Veuillez attendre que le code expire.");
         }
 
-        // Étape 4 : Envoyer le code OTP (même processus pour inscription et connexion)
-        user.setOtpResendCount(count + 1);
+        // Étape 6 : Générer et envoyer le code
+        String code = generateVerificationCode();
+        String hash = passwordEncoder.encode(code);
+        Instant expiry = now.plus(2, ChronoUnit.MINUTES);
+
+        // Mise à jour de tous les champs en une seule fois
+        if (isFirstSend) {
+            user.setOtpAttempts(0);
+            user.setOtpLockedUntil(null);
+            user.setOtpResendCount(0); // Le premier envoi ne compte pas comme renvoi
+        } else {
+            user.setOtpResendCount(count + 1); // Incrémenter uniquement pour les renvois
+        }
+
+        user.setVerificationCode(hash);
+        user.setVerificationExpiry(expiry);
+        user.setVerificationSentAt(now);
+
+        // UNE SEULE sauvegarde
         userRepository.saveAndFlush(user);
-        sendVerificationCode(user, count > 0);
+
+        // Envoi du mail (après la sauvegarde)
+        mailService.sendVerificationEmail(user.getEmail(), code);
 
         auditService.logAuthEvent("MAGIC_CODE_SENT", user.getEmail(), null, null,
-                java.util.Map.of("isNewUser", isNewUser, "resendCount", count));
+                java.util.Map.of("isNewUser", isNewUser, "isFirstSend", isFirstSend, "resendCount",
+                        user.getOtpResendCount()));
 
         return new MessageResponse("Code envoyé");
     }
@@ -394,6 +462,7 @@ public class AuthService {
         return verifyEmail(req);
     }
 
+    @Transactional
     public StartLoginResponse startLogin(String email) {
         String normalized = email == null ? "" : email.trim().toLowerCase();
         if (normalized.isEmpty())

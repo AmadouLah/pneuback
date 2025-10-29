@@ -25,25 +25,46 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
+import org.hibernate.StaleStateException;
+import jakarta.persistence.OptimisticLockException;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Authentification", description = "API d'authentification et d'inscription")
-@CrossOrigin(origins = "*")
 public class AuthController {
 
     private final AuthService authService;
 
     private ResponseEntity<?> handleException(Exception e) {
         String msg = e.getMessage();
+
+        // Gestion spécifique des erreurs de concurrence
+        if (e instanceof OptimisticLockException || e instanceof StaleStateException) {
+            log.warn("Conflit de concurrence détecté: {}", msg);
+            return ResponseEntity.status(409)
+                    .body(java.util.Map.of(
+                            "error", "Opération en cours ailleurs",
+                            "message", "Veuillez réessayer dans quelques secondes"));
+        }
+
+        if (e.getCause() instanceof OptimisticLockException || e.getCause() instanceof StaleStateException) {
+            log.warn("Conflit de concurrence détecté (cause): {}", msg);
+            return ResponseEntity.status(409)
+                    .body(java.util.Map.of(
+                            "error", "Opération en cours ailleurs",
+                            "message", "Veuillez réessayer dans quelques secondes"));
+        }
+
         if (e instanceof IllegalArgumentException) {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", msg != null ? msg : "Requête invalide"));
         }
 
+        log.error("Erreur serveur: ", e);
         return ResponseEntity.internalServerError()
-                .body(java.util.Map.of("error", "Erreur interne du serveur", "message", msg));
+                .body(java.util.Map.of("error", "Erreur interne du serveur", "message",
+                        msg != null ? msg : "Une erreur est survenue"));
     }
 
     @PostMapping("/start")
@@ -132,7 +153,7 @@ public class AuthController {
     }
 
     @PostMapping("/resend")
-    @Operation(summary = "Renvoi du code", description = "Renvoyer un nouveau code après 20 secondes")
+    @Operation(summary = "Renvoi du code", description = "Renvoyer un nouveau code. Limites: cooldown 20s, jusqu'à 3 renvois après l'envoi initial, réinitialisation après expiration du code (2 min)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Code renvoyé", content = @Content(mediaType = "application/json", schema = @Schema(implementation = MessageResponse.class))),
             @ApiResponse(responseCode = "400", description = "Requête invalide", content = @Content(mediaType = "application/json")),
@@ -149,7 +170,7 @@ public class AuthController {
     }
 
     @PostMapping("/magic/start")
-    @Operation(summary = "Démarrer connexion par email", description = "Envoie un code de vérification et applique limites: cooldown 20s, 3 renvois max")
+    @Operation(summary = "Démarrer connexion par email", description = "Envoie un code de vérification. Limites: cooldown 20s, jusqu'à 3 renvois après l'envoi initial, réinitialisation après expiration du code (2 min)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Code envoyé", content = @Content(mediaType = "application/json", schema = @Schema(implementation = MessageResponse.class))),
             @ApiResponse(responseCode = "400", description = "Requête invalide", content = @Content(mediaType = "application/json")),

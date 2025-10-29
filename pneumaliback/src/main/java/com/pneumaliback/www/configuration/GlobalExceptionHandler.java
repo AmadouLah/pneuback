@@ -15,6 +15,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.hibernate.StaleStateException;
+import jakarta.persistence.OptimisticLockException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,6 +57,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleIntegrity(DataIntegrityViolationException ex) {
         String msg = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(msg));
+    }
+
+    @ExceptionHandler({ OptimisticLockException.class, StaleStateException.class })
+    public ResponseEntity<ErrorResponse> handleOptimisticLockException(Exception e) {
+        log.warn("Conflit de concurrence détecté: {}", e.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                "Opération en cours ailleurs. Veuillez réessayer dans quelques secondes.", false);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
     @ExceptionHandler(RuntimeException.class)
