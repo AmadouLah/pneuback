@@ -1,0 +1,32 @@
+# ===== CONFIGURATION LOCALE (NE PAS COMMITER) =====
+# Copier ce fichier vers: application-local.properties
+# Et remplir avec vos vraies valeurs
+
+# ===== BASE DE DONNÉES =====
+DB_URL=jdbc:postgresql://your-host/your-database?sslmode=require
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+
+# ===== JWT =====
+JWT_SECRET=your-secret-key-min-64-characters-long
+JWT_EXPIRATION=86400000
+JWT_REFRESH_EXPIRATION=604800000
+
+# ===== EMAIL (SMTP par défaut) =====
+# Pour utiliser SendGrid en local, décommenter:
+# APP_MAIL_PROVIDER=sendgrid
+
+# Clé API SendGrid
+SENDGRID_API_KEY=SG.your-sendgrid-api-key
+
+# Configuration SMTP Gmail
+SPRING_MAIL_USERNAME=your-email@gmail.com
+SPRING_MAIL_PASSWORD=your-app-password
+APP_MAIL_FROM=your-email@gmail.com
+
+# Emails admin pour les rapports
+APP_ADMIN_EMAILS=admin@example.com
+
+# ===== CORS =====
+APP_CORS_ALLOWED_ORIGINS=*
+

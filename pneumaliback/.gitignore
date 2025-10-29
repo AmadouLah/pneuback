@@ -32,10 +32,14 @@ build/
 ### VS Code ###
 .vscode/
 
-### Environment files ###
+### Environment files (contain secrets) ###
 .env
 .env.*
 *.env
 *.env.local
 application-local.properties
-application-prod.properties
+**/application-local.properties
+
+### Logs and temporary files ###
+logs/
+*.log
