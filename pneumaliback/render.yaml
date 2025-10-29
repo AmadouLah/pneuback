@@ -19,7 +19,6 @@ services:
         sync: false
       - key: JWT_SECRET
         generateValue: true
-        sync: false
       - key: JWT_EXPIRATION
         value: 86400000
       - key: JWT_REFRESH_EXPIRATION
@@ -31,7 +30,7 @@ services:
       - key: APP_MAIL_FROM
         value: amadoulandoure004@gmail.com
       - key: APP_CORS_ALLOWED_ORIGINS
-        value: "*"
+        value: https://pneufront.vercel.app,https://*.vercel.app
     healthCheckPath: /actuator/health
     autoDeploy: true
 
